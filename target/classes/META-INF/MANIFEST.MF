@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-Description: Feign Fastjson
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+Bundle-SymbolicName: io.github.openfeign.feign-fastjson
+Built-By: bluecreator(qiang.x.wang@gmail.com)
+Bnd-LastModified: 1510933376256
+Bundle-ManifestVersion: 2
+Bundle-DocURL: https://github.com/openfeign
+Bundle-Vendor: OpenFeign
+Import-Package: com.alibaba.fastjson.parser,com.alibaba.fastjson.parse
+ r.deserializer,com.alibaba.fastjson.serializer,com.alibaba.fastjson.u
+ til,feign;version="[9.5,10)",feign.codec;version="[9.5,10)"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Tool: Bnd-3.2.0.201605172007
+Originally-Created-By: Maven Integration for Eclipse
+Export-Package: feign.fastjson;uses:="com.alibaba.fastjson.parser,com.
+ alibaba.fastjson.parser.deserializer,com.alibaba.fastjson.serializer,
+ feign,feign.codec";version="9.5.1"
+Bundle-Name: Feign Fastjson
+Bundle-Version: 9.5.1
+Build-Jdk: 1.8.0_131
+Created-By: Apache Maven Bundle Plugin
+
