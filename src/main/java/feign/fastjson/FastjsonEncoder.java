@@ -15,6 +15,8 @@
  */
 package feign.fastjson;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializeConfig;
 import feign.RequestTemplate;
 import feign.codec.EncodeException;
@@ -30,11 +32,15 @@ public class FastjsonEncoder implements Encoder {
     private SerializeConfig config = null;
 
     public FastjsonEncoder() {
-        this.config=SerializeConfig.getGlobalInstance();
+        this(null);
     }
 
     public FastjsonEncoder(SerializeConfig config) {
-        this.config = config;
+        if (null != config) {
+            this.config = config;
+        } else {
+            this.config = SerializeConfig.getGlobalInstance();
+        }
     }
 
     /*
@@ -43,13 +49,8 @@ public class FastjsonEncoder implements Encoder {
      * @see feign.codec.Encoder#encode(java.lang.Object, java.lang.reflect.Type, feign.RequestTemplate)
      */
     @Override
-    public void encode(Object arg0, Type arg1, RequestTemplate arg2) throws EncodeException {
-        try {
-            JavaType javaType = mapper.getTypeFactory().constructType(bodyType);
-            template.body(mapper.writerFor(javaType).writeValueAsString(object));
-        } catch (JsonProcessingException e) {
-            throw new EncodeException(e.getMessage(), e);
-        }
+    public void encode(Object obj, Type type, RequestTemplate template) throws EncodeException {
+        template.body(JSON.toJSONString(obj,config));
     }
 
 }

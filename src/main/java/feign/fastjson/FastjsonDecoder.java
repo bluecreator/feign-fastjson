@@ -15,13 +15,9 @@
  */
 package feign.fastjson;
 
-import com.alibaba.fastjson.parser.DefaultJSONParser;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.parser.ParserConfig;
-import com.alibaba.fastjson.parser.deserializer.ExtraProcessor;
-import com.alibaba.fastjson.parser.deserializer.ExtraTypeProvider;
-import com.alibaba.fastjson.parser.deserializer.FieldTypeResolver;
-import com.alibaba.fastjson.parser.deserializer.ParseProcess;
 import com.alibaba.fastjson.util.IOUtils;
 import feign.FeignException;
 import feign.Response;
@@ -29,10 +25,9 @@ import feign.Util;
 import feign.codec.DecodeException;
 import feign.codec.Decoder;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
@@ -48,12 +43,12 @@ public class FastjsonDecoder implements Decoder {
     }
 
     public FastjsonDecoder(ParserConfig config) {
-        if(null!=config) {
-            this.config=config;
-        }else {
-            this.config=ParserConfig.getGlobalInstance();
+        if (null != config) {
+            this.config = config;
+        } else {
+            this.config = ParserConfig.getGlobalInstance();
         }
-        
+
     }
 
     /*
@@ -63,69 +58,28 @@ public class FastjsonDecoder implements Decoder {
      */
     @Override
     public Object decode(Response response, Type type) throws IOException, DecodeException, FeignException {
-        if (response.status() == 404) return Util.emptyValueOf(type);
-        if (response.body() == null) return null;
-        Reader reader = response.body().asReader();
-        if (!reader.markSupported()) {
-          reader = new BufferedReader(reader, 1);
-        }
-        try {
-          // Read the first byte to see if we have any data
-          reader.mark(1);
-          if (reader.read() == -1) {
-            return null; // Eagerly returning null avoids "No content to map due to end-of-input"
-          }
-          reader.reset();
-          return mapper.readValue(reader, mapper.constructType(type));
-        } catch (RuntimeJsonMappingException e) {
-          if (e.getCause() != null && e.getCause() instanceof IOException) {
-            throw IOException.class.cast(e.getCause());
-          }
-          throw e;
-        }
-      }
-    @SuppressWarnings("unchecked")
-    public static <T> T parseObject(String input, Type clazz, ParserConfig config, ParseProcess processor,
-                                          int featureValues, Feature... features) {
-        if (input == null) {
+        if (response.status() == 404)
+            return Util.emptyValueOf(type);
+        if (response.body() == null)
             return null;
+        InputStream in = response.body().asInputStream();
+        if (!in.markSupported()) {
+            in = new BufferedInputStream(in, 2);
         }
 
-        if (features != null) {
-            for (Feature feature : features) {
-                featureValues |= feature.mask;
-            }
+        // Read the first byte to see if we have any data
+        in.mark(1);
+        if (in.read() == -1) {
+            return null; // Eagerly returning null avoids "No content to map due to end-of-input"
         }
+        in.reset();
 
-        DefaultJSONParser parser = new DefaultJSONParser(input, config, featureValues);
+        return parseObject(in, null, type);
 
-        if (processor != null) {
-            if (processor instanceof ExtraTypeProvider) {
-                parser.getExtraTypeProviders().add((ExtraTypeProvider) processor);
-            }
-
-            if (processor instanceof ExtraProcessor) {
-                parser.getExtraProcessors().add((ExtraProcessor) processor);
-            }
-
-            if (processor instanceof FieldTypeResolver) {
-                parser.setFieldTypeResolver((FieldTypeResolver) processor);
-            }
-        }
-
-        T value = (T) parser.parseObject(clazz, null);
-
-        parser.handleResovleTask(value);
-
-        parser.close();
-
-        return (T) value;
     }
-    /**
-     * @since 1.2.11
-     */
+
     @SuppressWarnings("unchecked")
-    public static <T> T parseObject(InputStream is, //
+    public <T> T parseObject(InputStream is, //
             Charset charset, //
             Type type, //
             Feature...features) throws IOException {
@@ -155,7 +109,7 @@ public class FastjsonDecoder implements Decoder {
      * @since 1.2.11
      */
     @SuppressWarnings("unchecked")
-    public static <T> T parseObject(byte[] bytes, int offset, int len, Charset charset, Type clazz, Feature...features) {
+    public <T> T parseObject(byte[] bytes, int offset, int len, Charset charset, Type clazz, Feature...features) {
         if (charset == null) {
             charset = IOUtils.UTF8;
         }
@@ -174,7 +128,7 @@ public class FastjsonDecoder implements Decoder {
             }
             strVal = new String(bytes, offset, len, charset);
         }
-        return (T) parseObject(strVal, clazz, config,features);
+        return JSON.parseObject(strVal, clazz, config, features);
     }
 
     private final static ThreadLocal<char[]> charsLocal = new ThreadLocal<char[]>();
@@ -195,8 +149,9 @@ public class FastjsonDecoder implements Decoder {
 
         return chars;
     }
-    
+
     private final static ThreadLocal<byte[]> bytesLocal = new ThreadLocal<byte[]>();
+
     private static byte[] allocateBytes(int length) {
         byte[] chars = bytesLocal.get();
 
