@@ -106,7 +106,6 @@ public class FastjsonDecoder implements Decoder {
     }
 
   
-    @SuppressWarnings("unchecked")
     public <T> T parseObject(byte[] bytes, int offset, int len, Charset charset, Type clazz, Feature...features) {
         if (charset == null) {
             charset = IOUtils.UTF8;
@@ -115,6 +114,7 @@ public class FastjsonDecoder implements Decoder {
         String strVal;
         if (charset == IOUtils.UTF8) {
             char[] chars = allocateChars(bytes.length);
+            @SuppressWarnings("deprecation")
             int chars_len = IOUtils.decodeUTF8(bytes, offset, len, chars);
             if (chars_len < 0) {
                 return null;
