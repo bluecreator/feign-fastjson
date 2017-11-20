@@ -16,13 +16,13 @@
 			<version>1.2.38</version>
 		</dependency>
 		<dependency>
-        <groupId>io.github.openfeign</groupId>
-        <artifactId>feign-core</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>io.github.openfeign</groupId>
-        <artifactId>feign-core</artifactId>
-        <type>test-jar</type>
-      </dependency>
+			<groupId>io.github.openfeign</groupId>
+			<artifactId>feign-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.openfeign</groupId>
+			<artifactId>feign-core</artifactId>
+			<type>test-jar</type>
+		</dependency>
 	</dependencies>
 </project>
