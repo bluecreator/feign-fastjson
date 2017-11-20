@@ -105,9 +105,7 @@ public class FastjsonDecoder implements Decoder {
         return (T) parseObject(bytes, 0, offset, charset, type, features);
     }
 
-    /**
-     * @since 1.2.11
-     */
+  
     @SuppressWarnings("unchecked")
     public <T> T parseObject(byte[] bytes, int offset, int len, Charset charset, Type clazz, Feature...features) {
         if (charset == null) {
